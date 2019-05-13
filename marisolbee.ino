@@ -61,15 +61,20 @@ void handleRoot() {
   if ( passCorrecta && (unsigned long)(millis()-StartTime) < interval) {   
     // Comprobamos Pin Rele
     if (digitalRead(Rele_Pin) == HIGH)
-      htmlPage += "<form id='F1' action='ON'><input class='button green' type='submit' value='Enciende'></form><br>";
+      htmlPage += "<form id='F1' action='on'><input class='button green' type='submit' value='Enciende'></form><br>";
     else
-      htmlPage += "<form id='F1' action='OFF'><input class='button red' type='submit' value='Apaga'></form><br>";
+      htmlPage += "<form id='F1' action='off'><input class='button red' type='submit' value='Apaga'></form><br>";
+
+    htmlPage += "Cambiar Clave<br>";
+    htmlPage += "<a href='http://marisolbee.local/chgpassform'>Cambiar</a>";
+      
     htmlPage += htmlFin;
   } else { // formulario password
     passCorrecta = false;
         
-    htmlPage += "<form id='F1' action='PASS'  method='get'>Password:<br><input type='password' name='psw'><br>";
-    htmlPage += "<input class='button' type='submit' value='PASS'></form><br>";
+    htmlPage += "<form id='F1' action='pass' method='post' enctype='application/x-www-form-urlencoded'>Clave:<br>";
+    htmlPage += "<input type='password' name='psw'><br>";
+    htmlPage += "<input class='button' type='submit' value='Enviar'></form><br>";
     htmlPage += htmlFin;
   }
   server.send(200, "text/html", htmlPage);
@@ -78,22 +83,23 @@ void handleRoot() {
 void handlePass() {
   String htmlPage = htmlIni;
 
+  passCorrecta  =  false;
   // parametros url
   for (uint8_t i = 0; i < server.args(); i++) {
     htmlPage += " " + server.argName(i) + ": " + server.arg(i) + "<br>";
     if (server.argName(i) == "psw" && server.arg(i) == pass) {
       passCorrecta = true;
       StartTime = millis();      
-      
-      htmlPage += "Clave correcta<br>"; // incluir redirección javascript
-      htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";      
-    } else {
-      htmlPage += "Clave INCORRECTA. Intenta nuevamente<br>";
-      htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";
     }
   }
+  if(passCorrecta) { 
+      htmlPage += "Clave correcta<br>"; // incluir redirección javascript
+      htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";      
+  } else {
+      htmlPage += "Clave INCORRECTA. Intenta nuevamente<br>";
+      htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";
+  }
   htmlPage += htmlFin;
-
   server.send(200, "text/html", htmlPage);
 }
 
@@ -105,6 +111,9 @@ void handleOn() {
   // Rele is off when output is LOW
   digitalWrite(LED_Pin, LOW);  
   digitalWrite(Rele_Pin, LOW);  
+
+  // Ponemos nuevamente el contador de tiempo
+  StartTime = millis();
         
   server.send(200, "text/html", htmlRedirect);
 }
@@ -113,11 +122,14 @@ void handleOff() {
   // Rele is on when output is HIGH
   digitalWrite(LED_Pin, HIGH);  
   digitalWrite(Rele_Pin, HIGH);  
+
+  // Ponemos nuevamente el contador de tiempo
+  StartTime = millis();
         
   server.send(200, "text/html", htmlRedirect);
 }
 
-void handleCFG() {
+void handleCfg() {
   String htmlPage = htmlIni;
 
   // SSID and Password to your ESP Access Point
@@ -149,12 +161,13 @@ void handleReset() {
   String htmlPage = htmlIni;
 
   // SSID and Password to your ESP Access Point
-  String ssid = DEFAULT_SSID;
-  String password = DEFAULT_PASSWORD;
+  ssid = DEFAULT_SSID;
+  password = DEFAULT_PASSWORD;
   // web PASS
-  String pass = DEFAULT_PASS;
+  pass = DEFAULT_PASS;
   // Time
-  unsigned long interval = DEFAULT_INTERVAL
+  interval = DEFAULT_INTERVAL;
+  saveCredentials();
   
   // Mostramos parámetros de configuración wifi
   htmlPage += "Valores de fábrica<br>";  
@@ -169,6 +182,138 @@ void handleReset() {
   
   htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";      
 
+  htmlPage += htmlFin;
+
+  server.send(200, "text/html", htmlPage);
+}
+
+void handleChgPassForm() {
+  String htmlPage = htmlIni;
+  htmlPage += "<form id='F1' action='chgpass' method='get'>";
+  htmlPage += "Clave:<input name='pwdold' type='password' value=''><br>";
+  htmlPage += "Nueva:<input name='pwdnew' type='password' value=''><br>";
+  htmlPage += "Repita:<input name='pwdrep' type='password' value=''><br>";
+  htmlPage += "<input class='button' type='submit' value='Enviar'></form><br>";
+
+  htmlPage += "Cambiar Parámetros<br>";
+  htmlPage += "<a href='http://marisolbee.local/chgparamform'>Cambiar</a><br>";
+  
+  htmlPage += "Volver<br>"; // incluir redirección javascript
+  htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";   
+
+  htmlPage += htmlFin;
+  server.send(200, "text/html", htmlPage);
+}
+
+void handleChgPass() {
+  String pwdold = "",pwdnew ="",pwdrep = "";
+  String htmlPage = htmlIni;
+  passCorrecta  =  false;
+
+  // parametros formulario
+  for (uint8_t i = 0; i < server.args(); i++) {
+    htmlPage += " " + server.argName(i) + ": " + server.arg(i) + "<br>";
+    if (server.argName(i) == "pwdold") {
+        pwdold = String(server.arg(i));
+     }
+    if (server.argName(i) == "pwdnew") {
+        pwdnew = String(server.arg(i));
+     }     
+    if (server.argName(i) == "pwdrep") {
+        pwdrep = String(server.arg(i));
+     }
+  }
+  if(pwdold == pass && pwdnew == pwdrep) { 
+      pass = pwdnew;
+      saveCredentials();
+      htmlPage += "Clave cambiada<br>"; // incluir redirección javascript
+      htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";      
+  } else {
+      htmlPage += "Clave INCORRECTA. Intenta nuevamente<br>";
+      htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";
+  }
+  htmlPage += htmlFin;
+  server.send(200, "text/html", htmlPage);
+}
+
+
+void handleChgParamForm() {
+  String htmlPage = htmlIni;
+  htmlPage += "<form id='F1' action='chgparam' method='get'>";
+  htmlPage += "ssid:<input name='ssid' type='text' value='" + ssid+"'><br>";
+  htmlPage += "wifi pass:<input name='password' type='text' '" + password + "'><br>";
+  htmlPage += "intervalo:<input name='interval' type='text' '" + String(interval) + "'><br>";
+
+  htmlPage += "<input class='button' type='submit' value='Enviar'></form><br>";
+
+  htmlPage += "Cambiar Clave de acceso<br>";
+  htmlPage += "<a href='http://marisolbee.local/chgpassform'>Cambiar clave</a><br>";
+
+  htmlPage += "Volver<br>"; // incluir redirección javascript
+  htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>"; 
+
+  htmlPage += htmlFin;
+  server.send(200, "text/html", htmlPage);
+}
+
+void handleChgParam() {
+  String nssid, npassword;
+  unsigned long ninterval;
+  
+  String htmlPage = htmlIni;
+  passCorrecta  =  false;
+  
+  // parametros formulario
+  for (uint8_t i = 0; i < server.args(); i++) {
+    htmlPage += " " + server.argName(i) + ": " + server.arg(i) + "<br>";
+    if (server.argName(i) == "ssid") {
+        nssid = String(server.arg(i));
+    }
+    if (server.argName(i) == "password") {
+        npassword = String(server.arg(i));
+    }     
+    if (server.argName(i) == "interval") {
+        ninterval = String(server.arg(i)).toInt();
+    }
+  }
+  ssid = nssid;
+  password = npassword;
+  interval = ninterval;
+  saveCredentials();  
+  
+  htmlPage += "Parámetros cambiados<br>"; // incluir redirección
+  htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";      
+  htmlPage += htmlFin;
+  server.send(200, "text/html", htmlPage);
+}
+
+void handleSalva() {
+  String htmlPage = htmlIni;
+
+  saveCredentials();
+  // Mostramos los valore previos
+  // Mostramos parámetros de configuración wifi
+  htmlPage += "Valores previos <br>";
+  htmlPage += "ssid : " + ssid + "<br>";
+  htmlPage += "wifipass : " + password + "<br>";  
+  // Mostramos parámetros de configuración web pass
+  htmlPage += "webpass : " + pass + "<br>"; 
+  // Mostramos parámetros de configuración web pass
+  htmlPage += "Intervalo : " + String(interval) + "<br>";   
+
+  loadCredentials();
+  // Mostramos los valore recuperados
+  // Mostramos parámetros de configuración wifi
+  htmlPage += "Valores previos <br>";
+  htmlPage += "ssid : " + ssid + "<br>";
+  htmlPage += "wifipass : " + password + "<br>"; 
+  // Mostramos parámetros de configuración web pass
+  htmlPage += "webpass : " + pass + "<br>"; 
+  // Mostramos parámetros de configuración web pass
+  htmlPage += "Intervalo : " + String(interval) + "<br>";
+
+  
+  htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";      
   htmlPage += htmlFin;
 
   server.send(200, "text/html", htmlPage);
@@ -194,6 +339,7 @@ void loadCredentials() {
 
 /** Store credentials to EEPROM */
 void saveCredentials() {
+  EEPROM.begin(64);
   // SSID and Password to your ESP Access Point
   // ssid = "MarisolBee";
   // password = "12345678";
@@ -201,7 +347,6 @@ void saveCredentials() {
   // pass = "1234";
   // Time
   // interval = 50000;  
-  EEPROM.begin(64);
   EEPROM.put(0, ssid);
   EEPROM.put(0 + sizeof(ssid), password);
   EEPROM.put(0 + sizeof(ssid) + 20, pass);
@@ -241,22 +386,25 @@ void setup(void){
   pinMode(Rele_Pin, OUTPUT);
 
   // Set rele off
-  // Rele is off when output is LOW
-  digitalWrite(LED_Pin, LOW);  
-  digitalWrite(Rele_Pin, LOW); 
+  // Rele is off when output is HIGH
+  digitalWrite(LED_Pin, HIGH);  
+  digitalWrite(Rele_Pin, HIGH); 
   
-     
   server.on("/", handleRoot);      //Which routine to handle at root location
-  // server.on("/PASS",HTTP_POST, handlePass); 
-  server.on("/PASS", handlePass);   
-  server.on("/ON", handleOn);
-  server.on("/OFF", handleOff);
-  server.on("/CFG", handleCFG);
-  server.on("/RST", handleReset);  
+  // server.on("/pass",HTTP_POST, handlePass); 
+  server.on("/pass", handlePass);   
+  server.on("/on", handleOn);
+  server.on("/off", handleOff);
+  server.on("/cfg", handleCfg);
+  server.on("/rst", handleReset);  
+  server.on("/chgpassform", handleChgPassForm);  
+  server.on("/chgpass", handleChgPass);
+  server.on("/chgparamform", handleChgParamForm);  
+  server.on("/chgparam", handleChgParam);  
+  server.on("/salva", handleSalva);   
   
   server.onNotFound(handleRedirect); // When a client requests an unknown URI (i.e. something other than "/")
 
-         
   server.begin();  //Start server
   Serial.println("HTTP server started");
 
