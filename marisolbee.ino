@@ -44,7 +44,7 @@ unsigned long StartTime = 0;
 unsigned long interval = DEFAULT_INTERVAL;
 
 // html
-String htmlIni = "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'/><meta charset='utf-8'><style>body {font-size:140%;} #main {display: table; margin: auto;  padding: 0 10px 0 10px; } h2,{text-align:center; } .button { padding:10px 10px 10px 10px; width:100%;  font-size: 120%;} .red { background-color: #CC0000;} .green { background-color: #4CAF50;}</style><title>Marisol bee</title></head><body><div id='main'><h2>Marisol&nbsp;bee</h2>";
+String htmlIni = "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'/><meta charset='utf-8'><style>body {font-size:140%;} #main {display: table; margin: auto;  padding: 0 10px 0 10px; } h2,{text-align:center; } .button { padding:10px 10px 10px 10px; width:100%;  font-size: 120%;} .red { background-color: #CC0000;} .green { background-color: #4CAF50;}</style><title>Marisol bee</title></head><body><div id='main'><h2>&#128690;Marisol&nbsp;bee</h2>";
 
 String htmlFin = "</div></body></html>";
 
@@ -65,8 +65,8 @@ void handleRoot() {
     else
       htmlPage += "<form id='F1' action='off'><input class='button red' type='submit' value='Apaga'></form><br>";
 
-    htmlPage += "Cambiar Clave<br>";
-    htmlPage += "<a href='http://marisolbee.local/chgpassform'>Cambiar</a>";
+    htmlPage += "<a href='http://marisolbee.local/chgpassform'>&#x1F511;Cambiar Clave</a><br>";
+    htmlPage += "<a href='http://marisolbee.local/lock'>&#x1F512;Bloquear</a>";
       
     htmlPage += htmlFin;
   } else { // formulario password
@@ -94,10 +94,10 @@ void handlePass() {
   }
   if(passCorrecta) { 
       htmlPage += "Clave correcta<br>"; // incluir redirección javascript
-      htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";      
+      htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";      
   } else {
       htmlPage += "Clave INCORRECTA. Intenta nuevamente<br>";
-      htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";
+      htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";
   }
   htmlPage += htmlFin;
   server.send(200, "text/html", htmlPage);
@@ -129,6 +129,12 @@ void handleOff() {
   server.send(200, "text/html", htmlRedirect);
 }
 
+void handleLock() {
+  // Provocamos el bloqueo de la clave y redireccionamos
+  passCorrecta = false;
+  server.send(200, "text/html", htmlRedirect);
+}
+
 void handleCfg() {
   String htmlPage = htmlIni;
 
@@ -150,7 +156,7 @@ void handleCfg() {
   // Mostramos parámetros de configuración web pass
   htmlPage += "Intervalo : " + String(interval) + "<br>";   
   
-  htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";      
+  htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";      
 
   htmlPage += htmlFin;
 
@@ -180,7 +186,7 @@ void handleReset() {
   // Mostramos parámetros de configuración web pass
   htmlPage += "Intervalo : " + String(interval) + "<br>";   
   
-  htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";      
+  htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";      
 
   htmlPage += htmlFin;
 
@@ -195,11 +201,8 @@ void handleChgPassForm() {
   htmlPage += "Repita:<input name='pwdrep' type='password' value=''><br>";
   htmlPage += "<input class='button' type='submit' value='Enviar'></form><br>";
 
-  htmlPage += "Cambiar Parámetros<br>";
-  htmlPage += "<a href='http://marisolbee.local/chgparamform'>Cambiar</a><br>";
-  
-  htmlPage += "Volver<br>"; // incluir redirección javascript
-  htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";   
+  htmlPage += "<a href='http://marisolbee.local/chgparamform'>&#x1F511;Cambiar parámetros</a><br>";
+  htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";   
 
   htmlPage += htmlFin;
   server.send(200, "text/html", htmlPage);
@@ -227,10 +230,10 @@ void handleChgPass() {
       pass = pwdnew;
       saveCredentials();
       htmlPage += "Clave cambiada<br>"; // incluir redirección javascript
-      htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";      
+      htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";      
   } else {
       htmlPage += "Clave INCORRECTA. Intenta nuevamente<br>";
-      htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";
+      htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";
   }
   htmlPage += htmlFin;
   server.send(200, "text/html", htmlPage);
@@ -246,11 +249,8 @@ void handleChgParamForm() {
 
   htmlPage += "<input class='button' type='submit' value='Enviar'></form><br>";
 
-  htmlPage += "Cambiar Clave de acceso<br>";
-  htmlPage += "<a href='http://marisolbee.local/chgpassform'>Cambiar clave</a><br>";
-
-  htmlPage += "Volver<br>"; // incluir redirección javascript
-  htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>"; 
+  htmlPage += "<a href='http://marisolbee.local/chgpassform'>&#x1F511;Cambiar clave de acceso</a><br>";
+  htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>"; 
 
   htmlPage += htmlFin;
   server.send(200, "text/html", htmlPage);
@@ -282,7 +282,7 @@ void handleChgParam() {
   saveCredentials();  
   
   htmlPage += "Parámetros cambiados<br>"; // incluir redirección
-  htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";      
+  htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";      
   htmlPage += htmlFin;
   server.send(200, "text/html", htmlPage);
 }
@@ -313,7 +313,7 @@ void handleSalva() {
   htmlPage += "Intervalo : " + String(interval) + "<br>";
 
   
-  htmlPage += "<a href='http://marisolbee.local'>marisolbee.local</a>";      
+  htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";      
   htmlPage += htmlFin;
 
   server.send(200, "text/html", htmlPage);
@@ -395,6 +395,7 @@ void setup(void){
   server.on("/pass", handlePass);   
   server.on("/on", handleOn);
   server.on("/off", handleOff);
+  server.on("/lock", handleLock);  
   server.on("/cfg", handleCfg);
   server.on("/rst", handleReset);  
   server.on("/chgpassform", handleChgPassForm);  
