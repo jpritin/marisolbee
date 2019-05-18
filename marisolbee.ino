@@ -17,6 +17,14 @@
 #define DEFAULT_STARTTIME 0;
 #define DEFAULT_INTERVAL 5000;
 
+// Unicode Characters
+#define CHAR_BIKE &#x1F6B2; // \u1F6B2; 
+#define CHAR_LOCK &#x1F512;
+#define CHAR_KEY &#x1F511;
+#define CHAR_HOUSE &#x1F3D8;
+#define CHAR_GEAR &#x2699;
+
+
 // DNS
 const byte DNS_PORT = 53;
 DNSServer dnsServer;
@@ -44,7 +52,7 @@ unsigned long StartTime = 0;
 unsigned long interval = DEFAULT_INTERVAL;
 
 // html
-String htmlIni = "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'/><meta charset='utf-8'><style>body {font-size:140%;} #main {display: table; margin: auto;  padding: 0 10px 0 10px; } h2,{text-align:center; } .button { padding:10px 10px 10px 10px; width:100%;  font-size: 120%;} .red { background-color: #CC0000;} .green { background-color: #4CAF50;}</style><title>Marisol bee</title></head><body><div id='main'><h2>&#128690;Marisol&nbsp;bee</h2>";
+String htmlIni = "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'/><meta charset='utf-8'><style>body {font-size:140%;} #main {display: table; margin: auto;  padding: 0 10px 0 10px; } h2,{text-align:center; } .button { padding:10px 10px 10px 10px; width:100%;  font-size: 120%;} .red { background-color: #CC0000;} .green { background-color: #4CAF50;}</style><title>Marisol bee</title></head><body><div id='main'><h2>&#x1F6B2;Marisol&nbsp;bee</h2>";
 
 String htmlFin = "</div></body></html>";
 
@@ -86,7 +94,7 @@ void handlePass() {
   passCorrecta  =  false;
   // parametros url
   for (uint8_t i = 0; i < server.args(); i++) {
-    htmlPage += " " + server.argName(i) + ": " + server.arg(i) + "<br>";
+    // htmlPage += " " + server.argName(i) + ": " + server.arg(i) + "<br>";
     if (server.argName(i) == "psw" && server.arg(i) == pass) {
       passCorrecta = true;
       StartTime = millis();      
@@ -94,10 +102,10 @@ void handlePass() {
   }
   if(passCorrecta) { 
       htmlPage += "Clave correcta<br>"; // incluir redirección javascript
-      htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";      
+      htmlPage += "<a href='http://marisolbee.local'>&#x1F6B2;marisolbee.local</a>";      
   } else {
       htmlPage += "Clave INCORRECTA. Intenta nuevamente<br>";
-      htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";
+      htmlPage += "<a href='http://marisolbee.local'>&#x1F6B2;marisolbee.local</a>";
   }
   htmlPage += htmlFin;
   server.send(200, "text/html", htmlPage);
@@ -156,7 +164,7 @@ void handleCfg() {
   // Mostramos parámetros de configuración web pass
   htmlPage += "Intervalo : " + String(interval) + "<br>";   
   
-  htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";      
+  htmlPage += "<a href='http://marisolbee.local'>&#x1F6B2;marisolbee.local</a>";      
 
   htmlPage += htmlFin;
 
@@ -186,7 +194,7 @@ void handleReset() {
   // Mostramos parámetros de configuración web pass
   htmlPage += "Intervalo : " + String(interval) + "<br>";   
   
-  htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";      
+  htmlPage += "<a href='http://marisolbee.local'>&#x1F6B2;marisolbee.local</a>";      
 
   htmlPage += htmlFin;
 
@@ -201,8 +209,8 @@ void handleChgPassForm() {
   htmlPage += "Repita:<input name='pwdrep' type='password' value=''><br>";
   htmlPage += "<input class='button' type='submit' value='Enviar'></form><br>";
 
-  htmlPage += "<a href='http://marisolbee.local/chgparamform'>&#x1F511;Cambiar parámetros</a><br>";
-  htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";   
+  htmlPage += "<a href='http://marisolbee.local/chgparamform'>&#x2699;Cambiar parámetros</a><br>";
+  htmlPage += "<a href='http://marisolbee.local'>&#x1F6B2;marisolbee.local</a>";   
 
   htmlPage += htmlFin;
   server.send(200, "text/html", htmlPage);
@@ -215,7 +223,7 @@ void handleChgPass() {
 
   // parametros formulario
   for (uint8_t i = 0; i < server.args(); i++) {
-    htmlPage += " " + server.argName(i) + ": " + server.arg(i) + "<br>";
+    // htmlPage += " " + server.argName(i) + ": " + server.arg(i) + "<br>";
     if (server.argName(i) == "pwdold") {
         pwdold = String(server.arg(i));
      }
@@ -230,10 +238,10 @@ void handleChgPass() {
       pass = pwdnew;
       saveCredentials();
       htmlPage += "Clave cambiada<br>"; // incluir redirección javascript
-      htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";      
+      htmlPage += "<a href='http://marisolbee.local'>&#x1F6B2;marisolbee.local</a>";      
   } else {
       htmlPage += "Clave INCORRECTA. Intenta nuevamente<br>";
-      htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";
+      htmlPage += "<a href='http://marisolbee.local'>&#x1F6B2;marisolbee.local</a>";
   }
   htmlPage += htmlFin;
   server.send(200, "text/html", htmlPage);
@@ -250,7 +258,7 @@ void handleChgParamForm() {
   htmlPage += "<input class='button' type='submit' value='Enviar'></form><br>";
 
   htmlPage += "<a href='http://marisolbee.local/chgpassform'>&#x1F511;Cambiar clave de acceso</a><br>";
-  htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>"; 
+  htmlPage += "<a href='http://marisolbee.local'>&#x1F6B2;marisolbee.local</a>"; 
 
   htmlPage += htmlFin;
   server.send(200, "text/html", htmlPage);
@@ -265,7 +273,7 @@ void handleChgParam() {
   
   // parametros formulario
   for (uint8_t i = 0; i < server.args(); i++) {
-    htmlPage += " " + server.argName(i) + ": " + server.arg(i) + "<br>";
+    // htmlPage += " " + server.argName(i) + ": " + server.arg(i) + "<br>";
     if (server.argName(i) == "ssid") {
         nssid = String(server.arg(i));
     }
@@ -282,7 +290,7 @@ void handleChgParam() {
   saveCredentials();  
   
   htmlPage += "Parámetros cambiados<br>"; // incluir redirección
-  htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";      
+  htmlPage += "<a href='http://marisolbee.local'>&#x1F6B2;marisolbee.local</a>";      
   htmlPage += htmlFin;
   server.send(200, "text/html", htmlPage);
 }
@@ -313,7 +321,7 @@ void handleSalva() {
   htmlPage += "Intervalo : " + String(interval) + "<br>";
 
   
-  htmlPage += "<a href='http://marisolbee.local'>&#128690;marisolbee.local</a>";      
+  htmlPage += "<a href='http://marisolbee.local'>&#x1F6B2;marisolbee.local</a>";      
   htmlPage += htmlFin;
 
   server.send(200, "text/html", htmlPage);
